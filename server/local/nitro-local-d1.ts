@@ -12,7 +12,7 @@ import { pathToFileURL } from 'node:url'
 
 export default defineNitroPlugin(async (nitroApp) => {
   const dbPath = process.env.LOCAL_D1_PATH || resolve(process.cwd(), '.data/local.db')
-  const shimUrl = pathToFileURL(resolve(process.cwd(), 'local/d1-shim.mjs')).href
+  const shimUrl = pathToFileURL(resolve(process.cwd(), 'server/local/d1-shim.mjs')).href
 
   const { openLocalD1 } = await import(/* @vite-ignore */ shimUrl)
   const DB = await openLocalD1(dbPath)
