@@ -2,7 +2,7 @@ import { getCookie, setCookie, deleteCookie, getRequestHeader, type H3Event } fr
 import { and, eq, gt } from 'drizzle-orm'
 import { useDrizzle } from './db'
 import { sha256Hex, randomToken } from './crypto'
-import { sessions, users, type User } from '../../db/schema'
+import { sessions, users, type User } from '~~/db/schema'
 
 const COOKIE = 'ksm_session'
 const TTL_DAYS = 7

@@ -1,8 +1,8 @@
 import { defineEventHandler, readRawBody, createError, getHeader } from 'h3'
 import { and, eq, sql } from 'drizzle-orm'
-import { useDrizzle } from '../../utils/db'
-import { hmacSha256, timingSafeEqual } from '../../utils/crypto'
-import { limitRecords, limitReasonTags, marketDailySummary, ingestRuns } from '../../db/schema'
+import { useDrizzle } from '~~/server/utils/db'
+import { hmacSha256, timingSafeEqual } from '~~/server/utils/crypto'
+import { limitRecords, limitReasonTags, marketDailySummary, ingestRuns } from '~~/db/schema'
 
 /**
  * 采集器入口（B主：GitHub Actions / A备：本地脚本）。

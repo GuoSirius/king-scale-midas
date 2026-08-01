@@ -1,7 +1,7 @@
 import { defineEventHandler, createError } from 'h3'
 import { desc, eq } from 'drizzle-orm'
-import { useDrizzle } from '../../utils/db'
-import { limitRecords, limitReasonTags, concepts, stocks } from '../../db/schema'
+import { useDrizzle } from '~~/server/utils/db'
+import { limitRecords, limitReasonTags, concepts, stocks } from '~~/db/schema'
 
 /** 单只股票的历史涨跌停记录 + 题材标签 */
 export default defineEventHandler(async (event) => {

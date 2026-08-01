@@ -1,8 +1,8 @@
 import { defineEventHandler, readBody, createError } from 'h3'
 import { eq } from 'drizzle-orm'
-import { useDrizzle } from '../../utils/db'
-import { requireUser } from '../../utils/auth'
-import { limitRecords, userNotes } from '../../db/schema'
+import { useDrizzle } from '~~/server/utils/db'
+import { requireUser } from '~~/server/utils/auth'
+import { limitRecords, userNotes } from '~~/db/schema'
 
 /**
  * 补全 / 修订涨跌停原因。

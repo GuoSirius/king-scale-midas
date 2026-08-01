@@ -1,6 +1,6 @@
 import { createError, type H3Event } from 'h3'
 import { getUserFromEvent } from './session'
-import type { User } from '../../db/schema'
+import type { User } from '~~/db/schema'
 
 /** 要求已登录且已审核通过，否则 401 */
 export async function requireUser(event: H3Event): Promise<User> {

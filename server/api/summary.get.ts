@@ -1,7 +1,7 @@
 import { defineEventHandler } from 'h3'
 import { desc, eq, sql } from 'drizzle-orm'
-import { useDrizzle } from '../../utils/db'
-import { marketDailySummary, sectorDailyStats, limitRecords, limitReasonTags, concepts } from '../../db/schema'
+import { useDrizzle } from '~~/server/utils/db'
+import { marketDailySummary, sectorDailyStats, limitRecords, limitReasonTags, concepts } from '~~/db/schema'
 
 /** 首页情绪面板数据：最新交易日汇总 + 热门板块 + 热门题材 */
 export default defineEventHandler(async (event) => {

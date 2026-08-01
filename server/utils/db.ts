@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/d1'
-import { schema } from '../../db/schema'
+import { schema } from '~~/db/schema'
 import { createError, type H3Event } from 'h3'
 
 /**

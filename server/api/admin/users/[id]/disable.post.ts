@@ -1,8 +1,8 @@
 import { defineEventHandler, createError } from 'h3'
 import { eq } from 'drizzle-orm'
-import { useDrizzle } from '../../utils/db'
-import { requireAdmin } from '../../utils/auth'
-import { users, auditLogs } from '../../db/schema'
+import { useDrizzle } from '~~/server/utils/db'
+import { requireAdmin } from '~~/server/utils/auth'
+import { users, auditLogs } from '~~/db/schema'
 
 /** 禁用用户 */
 export default defineEventHandler(async (event) => {

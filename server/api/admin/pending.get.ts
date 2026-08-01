@@ -1,8 +1,8 @@
-import { defineEventHandler, desc } from 'h3'
-import { eq } from 'drizzle-orm'
-import { useDrizzle } from '../../utils/db'
-import { requireAdmin } from '../../utils/auth'
-import { users, type User } from '../../db/schema'
+import { defineEventHandler } from 'h3'
+import { eq, desc } from 'drizzle-orm'
+import { useDrizzle } from '~~/server/utils/db'
+import { requireAdmin } from '~~/server/utils/auth'
+import { users, type User } from '~~/db/schema'
 
 function publicUser(u: User) {
   return {

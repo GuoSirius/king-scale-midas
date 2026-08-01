@@ -1,6 +1,6 @@
 import { defineEventHandler } from 'h3'
-import { getUserFromEvent } from '../../utils/session'
-import type { User } from '../../db/schema'
+import { getUserFromEvent } from '~~/server/utils/session'
+import type { User } from '~~/db/schema'
 
 export default defineEventHandler(async (event) => {
   const user = await getUserFromEvent(event)

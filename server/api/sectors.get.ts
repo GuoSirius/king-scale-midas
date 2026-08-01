@@ -1,7 +1,7 @@
 import { defineEventHandler } from 'h3'
 import { desc, eq } from 'drizzle-orm'
-import { useDrizzle } from '../../utils/db'
-import { marketDailySummary, sectorDailyStats } from '../../db/schema'
+import { useDrizzle } from '~~/server/utils/db'
+import { marketDailySummary, sectorDailyStats } from '~~/db/schema'
 
 /** 板块热度：取最新交易日的板块涨停分布 */
 export default defineEventHandler(async (event) => {

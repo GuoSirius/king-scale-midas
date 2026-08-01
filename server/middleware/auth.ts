@@ -1,5 +1,5 @@
 import { defineEventHandler } from 'h3'
-import { requireAdmin } from '../utils/auth'
+import { requireAdmin } from '~~/server/utils/auth'
 
 /**
  * 全局鉴权中间件：所有 /api/admin/** 必须由管理员访问。
