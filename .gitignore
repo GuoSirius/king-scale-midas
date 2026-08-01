@@ -32,6 +32,9 @@ collector/.env
 # cloudflare
 .wrangler/
 
+# git rewrite backup
+.git-rewrite/
+
 # misc
 .DS_Store
 Thumbs.db
