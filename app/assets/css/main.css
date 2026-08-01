@@ -60,6 +60,22 @@ a {
   border-radius: 20px;
 }
 
+/* 深色顶栏玻璃（明色下转为浅色磨砂） */
+.glass-dark {
+  background: var(--bg-elev);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--border);
+}
+
+/* 通用卡片 = 玻璃 + 圆角 + 内边距 */
+.card {
+  background: var(--bg-card);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1.25rem;
+}
+
 /* 磁吸悬浮（轻量，移动端自动降级） */
 @media (hover: hover) {
   .magnetic:hover {
@@ -79,4 +95,44 @@ a {
 ::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 8px;
+}
+
+/* =========================================================
+   明色主题覆盖
+   组件大量直接使用了写死的暗色工具类（text-white/X、
+   bg-ink-*、border-white/X 等），这些不随 CSS 变量变化，
+   故在 html.light 下逐一重映射为亮色值。
+   html.light 前缀使特异性 (0,2,1) 高于单类选择器 (0,1,0)，
+   无需 !important 即可稳定覆盖 UnoCSS 生成的规则。
+   ========================================================= */
+html.light .text-white\/90 { color: rgba(18, 20, 32, 0.9); }
+html.light .text-white\/80 { color: rgba(18, 20, 32, 0.85); }
+html.light .text-white\/70 { color: rgba(18, 20, 32, 0.72); }
+html.light .text-white\/60 { color: rgba(18, 20, 32, 0.62); }
+html.light .text-white\/50 { color: rgba(18, 20, 32, 0.55); }
+html.light .text-white\/40 { color: rgba(18, 20, 32, 0.45); }
+html.light .text-white\/30 { color: rgba(18, 20, 32, 0.4); }
+
+html.light .bg-ink-900 { background-color: #f6f7fb; }
+html.light .bg-ink-800 { background-color: #ffffff; }
+html.light .bg-ink-800\/70 { background-color: rgba(255, 255, 255, 0.82); }
+
+html.light .border-white\/10 { border-color: rgba(18, 20, 32, 0.12); }
+html.light .border-white\/5 { border-color: rgba(18, 20, 32, 0.06); }
+
+html.light .bg-white\/10 { background-color: rgba(18, 20, 32, 0.08); }
+html.light .hover\:bg-white\/5:hover { background-color: rgba(18, 20, 32, 0.04); }
+
+/* 明色下表单控件配色 */
+html.light input,
+html.light select,
+html.light textarea {
+  color: #1a1a22;
+}
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: rgba(18, 20, 32, 0.4);
+}
+html.light input[type='date']::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
 }

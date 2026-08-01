@@ -62,9 +62,8 @@ export default defineConfig({
     }
   },
   shortcuts: {
-    'glass': 'bg-white/5 backdrop-blur-xl border border-white/10',
-    'glass-dark': 'bg-ink-800/70 backdrop-blur-xl border border-white/10',
-    'btn-gold': 'bg-gold text-ink-900 font-600 px-4 py-2 rounded-xl hover:bg-gold-soft transition shadow-glow',
-    'card': 'glass rounded-2xl p-5'
+    // 注：glass / glass-dark / card 改由 app/assets/css/main.css 用 CSS 变量定义，
+    // 以便跟随明/暗主题切换（避免 uno 字面色规则与 main.css 抢优先级）。
+    'btn-gold': 'bg-gold text-ink-900 font-600 px-4 py-2 rounded-xl hover:bg-gold-soft transition shadow-glow'
   }
 })
