@@ -21,6 +21,7 @@
     "db:local": "node scripts/local-db.mjs",
     "db:local:reset": "node scripts/local-db.mjs --reset",
     "db:seed:demo": "node scripts/seed-demo.mjs",
+    "icons:generate": "node scripts/gen-icons.mjs",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "collect:local": "python collector/run.py",
