@@ -39,7 +39,7 @@ class BoundStatement {
   /** D1: 返回 { results, success, meta } */
   async all() {
     const stmt = this.db.prepare(this.sql)
-    let results = []
+    let results
     try {
       results = stmt.all(...this.params).map(plain)
     } catch (err) {
@@ -51,7 +51,7 @@ class BoundStatement {
         success: true,
         meta: metaOf(info),
         error: undefined,
-        _fallback: String(err?.message || err),
+        _fallback: String(err?.message || err)
       }
     }
     return { results, success: true, meta: emptyMeta() }
@@ -92,7 +92,7 @@ function metaOf(info) {
     rows_written: changes,
     changes,
     last_row_id: Number(info?.lastInsertRowid ?? 0),
-    changed_db: changes > 0,
+    changed_db: changes > 0
   }
 }
 
