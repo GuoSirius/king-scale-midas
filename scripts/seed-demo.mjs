@@ -16,7 +16,8 @@
  *   4) market_index_daily   —— 上证 / 深成 / 创业板 三大指数日线（用于大盘对比）
  *   5) market_daily_summary —— 约 500 交易日（≈2 年）每日情绪汇总（趋势图数据源）
  *   6) sector/industry_daily_stats —— 最近 60 交易日板块 / 行业表现
- *   7) users                —— 一个 active 演示账号，可直接登录并测试受保护接口
+ *   7) users                —— 一个 active 默认超管（admin@king-scale.test）可直接登录审核；
+ *                              另有一个 active 演示普通账号（demo@king-scale.test）用于测试受保护接口
  *
  * 幂等：每次运行先清空 demo 专属表（users 仅删 demo 账号），可重复执行。
  *
@@ -75,9 +76,19 @@ async function main() {
       run(`DELETE FROM ${t}`)
     }
     run("DELETE FROM users WHERE email = ?", DEMO_USER.email)
+    run("DELETE FROM users WHERE email = ?", ADMIN_USER.email)
   })
 
-  // ---------- 1. 演示用户（active，可直接登录） ----------
+  // ---------- 1a. 默认超管（active，可直接登录并审核其他用户） ----------
+  const adminHash = await hashPassword(ADMIN_USER.password)
+  run(
+    `INSERT INTO users (email, username, password_hash, status, role, approved_at, created_at, updated_at)
+     VALUES (?, ?, ?, 'active', 'admin', current_timestamp, current_timestamp, current_timestamp)`,
+    ADMIN_USER.email, ADMIN_USER.username, adminHash
+  )
+  console.log(`[seed-demo] 默认超管已建：${ADMIN_USER.email} / ${ADMIN_USER.password}（角色 admin）`)
+
+  // ---------- 1b. 演示普通用户（active，可直接登录并测试受保护接口） ----------
   const passwordHash = await hashPassword(DEMO_USER.password)
   run(
     `INSERT INTO users (email, username, password_hash, status, role, created_at, updated_at)
@@ -220,6 +231,8 @@ const SUMMARY_DAYS = 500 // ≈ 2 年交易日
 const DETAIL_DAYS = 60 // 有逐笔明细的最近交易日
 
 const DEMO_USER = { email: 'demo@king-scale.test', username: 'demo', password: 'demo1234' }
+// 默认超管（与历史种子一致的账号 admin@ks.local，重跑种子时重置为已知密码）
+const ADMIN_USER = { email: 'admin@ks.local', username: 'admin', password: 'admin1234' }
 
 /** 主题 → 板块 / 行业 / 涨停原因池 / 股票池 */
 const THEMES = [
