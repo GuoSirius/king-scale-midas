@@ -1,9 +1,16 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
 # Nuxt / Nitro
-.node_modules
-.output
-.nuxt
-.data
+.output/
+.nuxt/
+.data/
+.tmp/
+.nitro/
+.cache/
 .nuxtrc
+dist/
 
 # env
 .env
@@ -13,6 +20,7 @@
 # logs
 *.log
 npm-debug.log*
+yarn-error.log*
 
 # python collector
 __pycache__/
@@ -21,8 +29,12 @@ __pycache__/
 venv/
 collector/.env
 
+# cloudflare
+.wrangler/
+
 # misc
 .DS_Store
+Thumbs.db
 .idea/
 .vscode/
-.wrangler/
+*.local
