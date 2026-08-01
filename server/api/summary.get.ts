@@ -1,5 +1,5 @@
 import { defineEventHandler } from 'h3'
-import { desc, eq, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, sql } from 'drizzle-orm'
 import { useDrizzle } from '~~/server/utils/db'
 import { marketDailySummary, sectorDailyStats, limitRecords, limitReasonTags, concepts } from '~~/db/schema'
 
@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
     .select()
     .from(sectorDailyStats)
     .where(eq(sectorDailyStats.tradeDate, latest.tradeDate))
-    .orderBy(desc(sectorDailyStats.limitUpCount))
+    .orderBy(asc(sectorDailyStats.rank))
     .limit(8)
 
   // 热门题材：按当日出现次数聚合

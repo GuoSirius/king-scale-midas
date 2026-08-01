@@ -1,5 +1,5 @@
 import { defineEventHandler } from 'h3'
-import { desc, eq } from 'drizzle-orm'
+import { asc, desc, eq } from 'drizzle-orm'
 import { useDrizzle } from '~~/server/utils/db'
 import { marketDailySummary, sectorDailyStats } from '~~/db/schema'
 
@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
     .select()
     .from(sectorDailyStats)
     .where(eq(sectorDailyStats.tradeDate, latest.tradeDate))
-    .orderBy(desc(sectorDailyStats.limitUpCount))
+    .orderBy(asc(sectorDailyStats.rank))
     .limit(30)
 
   return { tradeDate: latest.tradeDate, sectors }
