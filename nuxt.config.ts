@@ -16,6 +16,11 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
   devtools: { enabled: false },
 
+  // 开发期监听本机所有网卡（0.0.0.0），便于同网/手机访问 3000。
+  // 用配置项而非 --host：Nuxt 4 的 dev 监听地址读 devServer.host（非 dev.host / server.host），
+  // 且必须为字符串 '0.0.0.0'（boolean true 会被 get-port-please 拒绝）。
+  devServer: { host: '0.0.0.0' },
+
   // ── 模块（全部最新） ──────────────────────────────
   modules: [
     // 本地 A 备模式下不加载 cloudflare-dev，否则会去拉 workerd 二进制
