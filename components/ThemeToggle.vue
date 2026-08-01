@@ -1,9 +1,11 @@
 <script setup lang="ts">
 const { theme, set } = useTheme()
+type ThemeMode = 'dark' | 'light' | 'system'
 const cycle = () => {
-  const order = ['dark', 'light', 'system'] as const
-  const i = order.indexOf(theme.value)
-  set(order[(i + 1) % order.length])
+  const order: ThemeMode[] = ['dark', 'light', 'system']
+  const current = (theme.value as ThemeMode | undefined) ?? 'system'
+  const i = order.indexOf(current)
+  set(order[(i + 1) % order.length]!)
 }
 </script>
 

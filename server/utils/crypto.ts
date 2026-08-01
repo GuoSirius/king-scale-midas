@@ -19,7 +19,7 @@ function hexToBuf(hex: string): Uint8Array {
 
 /** 生成随机 hex token */
 export function randomToken(bytes = 32): string {
-  return bufToHex(crypto.getRandomValues(new Uint8Array(bytes)))
+  return bufToHex(crypto.getRandomValues(new Uint8Array(bytes)).buffer as ArrayBuffer)
 }
 
 /** PBKDF2-SHA256 哈希密码，返回 "salt:hash" */
@@ -31,7 +31,7 @@ export async function hashPassword(password: string, iterations = 100_000): Prom
     key,
     256,
   )
-  return `${bufToHex(salt.buffer)}:${bufToHex(bits)}`
+  return `${bufToHex(salt.buffer as ArrayBuffer)}:${bufToHex(bits)}`
 }
 
 /** 校验密码 */

@@ -111,10 +111,11 @@ export default defineEventHandler(async (event) => {
       recordId = existing.id
       updated++
     } else {
-      const [ins] = await db
+      const ins = (await db
         .insert(limitRecords)
         .values({ ...values, reasonFinal: '', isVerified: false, createdAt: now })
-        .returning()
+        .returning())[0]
+      if (!ins) continue
       recordId = ins.id
       inserted++
     }
@@ -205,7 +206,7 @@ async function recomputeSectorStats(db: ReturnType<typeof useDrizzle>, tradeDate
 
 /** 重算某交易日情绪汇总 */
 async function recomputeSummary(db: ReturnType<typeof useDrizzle>, tradeDate: string) {
-  const [agg] = await db
+  const agg = (await db
     .select({
       up: sql<number>`coalesce(sum(case when limit_type='up' then 1 else 0 end),0)`,
       down: sql<number>`coalesce(sum(case when limit_type='down' then 1 else 0 end),0)`,
@@ -214,7 +215,8 @@ async function recomputeSummary(db: ReturnType<typeof useDrizzle>, tradeDate: st
       first: sql<number>`coalesce(sum(case when limit_type='up' and zt_count=1 then 1 else 0 end),0)`,
     })
     .from(limitRecords)
-    .where(eq(limitRecords.tradeDate, tradeDate))
+    .where(eq(limitRecords.tradeDate, tradeDate)))[0]
+  if (!agg) return
 
   const up = Number(agg.up)
   const openCnt = Number(agg.openCnt)

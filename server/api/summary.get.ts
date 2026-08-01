@@ -37,8 +37,8 @@ export default defineEventHandler(async (event) => {
   const conceptNames = await db.select().from(concepts)
   const cMap = new Map(conceptNames.map((c) => [c.id, c.name]))
   const conceptsWithName = topConcepts
-    .filter((t) => t.conceptId)
-    .map((t) => ({ id: t.conceptId, name: cMap.get(t.conceptId!) || t.conceptId, count: Number(t.count) }))
+    .filter((t): t is typeof t & { conceptId: string } => !!t.conceptId)
+    .map((t) => ({ id: t.conceptId, name: cMap.get(t.conceptId) || t.conceptId, count: Number(t.count) }))
 
   return { summary: latest, topSectors, topConcepts: conceptsWithName }
 })

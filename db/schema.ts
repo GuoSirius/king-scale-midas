@@ -16,6 +16,7 @@ import {
   real,
   index,
   uniqueIndex,
+  type AnySQLiteColumn,
 } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
 
@@ -189,7 +190,8 @@ export const users = sqliteTable('users', {
   passwordHash: text('password_hash').notNull(), // PBKDF2: salt:hash
   status: text('status').notNull().default('pending'), // pending/active/disabled
   role: text('role').notNull().default('user'),  // user/admin
-  approvedBy: integer('approved_by').references(() => users.id),
+  // 自引用会破坏 TS 类型推断，通过返回类型断言绕过循环依赖
+  approvedBy: integer('approved_by').references((): AnySQLiteColumn => users.id),
   approvedAt: text('approved_at'),
   lastLoginAt: text('last_login_at'),
   createdAt: text('created_at').notNull().default(sql`(current_timestamp)`),

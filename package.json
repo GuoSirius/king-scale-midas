@@ -39,7 +39,8 @@
   "devDependencies": {
     "@cloudflare/workers-types": "latest",
     "drizzle-kit": "latest",
-    "typescript": "latest",
+    "typescript": "^5.8.2",
+    "vue-tsc": "^2.2.8",
     "wrangler": "latest"
   },
   "allowScripts": {

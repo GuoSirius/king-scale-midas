@@ -59,7 +59,7 @@ const pct = (v: number | null | undefined) => (v == null ? '—' : `${(v * 100).
         <div class="card">
           <h2 class="font-600 mb-3">热门板块</h2>
           <ul class="space-y-2">
-            <li v-for="s in data.topSectors" :key="s.id" class="flex items-center justify-between text-sm">
+            <li v-for="s in data.topSectors" :key="String(s.sectorId ?? s.id ?? s.rank ?? '')" class="flex items-center justify-between text-sm">
               <span class="text-white/80">{{ s.sectorId }}</span>
               <span class="text-up font-600">涨停 {{ s.limitUpCount }}</span>
             </li>

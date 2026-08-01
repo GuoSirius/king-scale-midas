@@ -30,10 +30,10 @@ export default defineEventHandler(async (event) => {
   const passwordHash = await hashPassword(password)
 
   // 首用户自举为管理员（仅当库为空时），否则为待审核普通用户
-  const [{ c }] = await db.select({ c: sql<number>`count(*)` }).from(users)
-  const isFirst = Number(c) === 0
+  const countRes = await db.select({ c: sql<number>`count(*)` }).from(users)
+  const isFirst = Number(countRes[0]?.c ?? 0) === 0
 
-  const [user] = await db
+  const inserted = await db
     .insert(users)
     .values({
       email,
@@ -41,10 +41,11 @@ export default defineEventHandler(async (event) => {
       passwordHash,
       status: isFirst ? 'active' : 'pending',
       role: isFirst ? 'admin' : 'user',
-      approvedBy: isFirst ? null : null,
+      approvedBy: null,
       approvedAt: isFirst ? new Date().toISOString() : null,
     })
     .returning()
+  const user = inserted[0]!
 
   if (isFirst) {
     await createSession(event, user.id)
