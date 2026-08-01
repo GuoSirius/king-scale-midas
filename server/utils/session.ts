@@ -1,4 +1,4 @@
-import { getCookie, setCookie, deleteCookie, getRequestHeader, type H3Event } from 'h3'
+import { getCookie, setCookie, deleteCookie, getRequestHeader, getRequestProtocol, type H3Event } from 'h3'
 import { and, eq, gt } from 'drizzle-orm'
 import { useDrizzle } from './db'
 import { sha256Hex, randomToken } from './crypto'
@@ -23,7 +23,9 @@ export async function createSession(event: H3Event, userId: number) {
   })
   setCookie(event, COOKIE, token, {
     httpOnly: true,
-    secure: true,
+    // 仅在 HTTPS 下标记 Secure：本地 dev 走 HTTP，浏览器不会在 HTTP 下发送 Secure cookie，
+    // 否则登录后所有接口都拿不到会话，表现为“登录成功却进不去其他页面”。
+    secure: getRequestProtocol(event) === 'https',
     sameSite: 'lax',
     path: '/',
     maxAge: MAX_AGE
