@@ -1,0 +1,82 @@
+/* 金鳞·点石 — 全局设计令牌与基础样式 */
+
+:root {
+  --bg: #0b0b0f;
+  --bg-elev: #121219;
+  --bg-card: rgba(255, 255, 255, 0.05);
+  --border: rgba(255, 255, 255, 0.1);
+  --text: rgba(255, 255, 255, 0.92);
+  --text-dim: rgba(255, 255, 255, 0.6);
+  --gold: #e8b339;
+  --gold-soft: #f5c451;
+  --up: #f5455c;
+  --down: #1fb86b;
+  color-scheme: dark;
+}
+
+/* 明色主题 */
+:root.light {
+  --bg: #f6f7fb;
+  --bg-elev: #ffffff;
+  --bg-card: rgba(20, 20, 30, 0.03);
+  --border: rgba(20, 20, 30, 0.1);
+  --text: #1a1a22;
+  --text-dim: rgba(20, 20, 30, 0.55);
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 品牌渐变文字 */
+.text-gradient {
+  background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* 玻璃拟态卡片 */
+.glass {
+  background: var(--bg-card);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+
+/* 磁吸悬浮（轻量，移动端自动降级） */
+@media (hover: hover) {
+  .magnetic:hover {
+    transform: translateY(-2px) scale(1.02);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+.magnetic {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 8px;
+}

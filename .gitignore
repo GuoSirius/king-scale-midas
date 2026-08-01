@@ -1,0 +1,28 @@
+# Nuxt / Nitro
+.node_modules
+.output
+.nuxt
+.data
+.nuxtrc
+
+# env
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+
+# python collector
+__pycache__/
+*.pyc
+.venv/
+venv/
+collector/.env
+
+# misc
+.DS_Store
+.idea/
+.vscode/
+.wrangler/

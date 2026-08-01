@@ -1,0 +1,38 @@
+{
+  "name": "king-scale-midas",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@12.0.2",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "typecheck": "nuxt typecheck",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "collect:local": "python collector/run.py",
+    "collect:local:today": "python collector/run.py --date today"
+  },
+  "dependencies": {
+    "@unocss/nuxt": "latest",
+    "@vite-pwa/nuxt": "latest",
+    "drizzle-orm": "latest",
+    "nitro-cloudflare-dev": "latest",
+    "nuxt": "latest",
+    "unocss": "latest",
+    "vue": "latest"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "latest",
+    "drizzle-kit": "latest",
+    "typescript": "latest",
+    "wrangler": "latest"
+  }
+}

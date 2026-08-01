@@ -1,0 +1,39 @@
+name: Collect A-Share Limit Data
+
+# B主：GitHub Actions 定时（交易日下午 15:30 北京时间 = UTC 07:30，周一至周五）
+# A备：本机 `python collector/run.py` 手动补跑
+on:
+  schedule:
+    - cron: '30 7 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      date:
+        description: '交易日期 YYYYMMDD（留空=今天）'
+        required: false
+        default: ''
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r collector/requirements.txt
+
+      - name: Run collector
+        env:
+          INGEST_URL: ${{ secrets.INGEST_URL }}
+          INGEST_SECRET: ${{ secrets.INGEST_SECRET }}
+        run: |
+          if [ -n "${{ github.event.inputs.date }}" ]; then
+            python collector/run.py --date "${{ github.event.inputs.date }}"
+          else
+            python collector/run.py
+          fi
