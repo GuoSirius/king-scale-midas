@@ -16,8 +16,8 @@ import {
   real,
   index,
   uniqueIndex,
-  sql,
 } from 'drizzle-orm/sqlite-core'
+import { sql } from 'drizzle-orm'
 
 // ============ 域 A：基础数据（字典 / 参考） ============
 
@@ -326,3 +326,8 @@ export const schema = {
   users, roles, userRoles, sessions, permissions, rolePermissions, auditLogs,
   ingestRuns, dataSources, userNotes, watchlists, watchlistItems,
 }
+
+// 行类型（供服务端工具与路由使用）
+export type User = typeof users.$inferSelect
+export type LimitRecord = typeof limitRecords.$inferSelect
+export type SessionRow = typeof sessions.$inferSelect

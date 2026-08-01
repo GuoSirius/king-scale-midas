@@ -1,4 +1,4 @@
-import { defineEventHandler, readRawBody, createError } from 'h3'
+import { defineEventHandler, readRawBody, createError, getHeader } from 'h3'
 import { and, eq, sql } from 'drizzle-orm'
 import { useDrizzle } from '../../utils/db'
 import { hmacSha256, timingSafeEqual } from '../../utils/crypto'
