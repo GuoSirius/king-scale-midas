@@ -2,7 +2,16 @@ import { defineEventHandler, readRawBody, createError, getHeader } from 'h3'
 import { and, eq, sql } from 'drizzle-orm'
 import { useDrizzle } from '~~/server/utils/db'
 import { hmacSha256, timingSafeEqual } from '~~/server/utils/crypto'
-import { limitRecords, limitReasonTags, marketDailySummary, ingestRuns } from '~~/db/schema'
+import {
+  limitRecords,
+  limitReasonTags,
+  marketDailySummary,
+  sectorDailyStats,
+  ingestRuns,
+  stocks,
+  sectors,
+  concepts,
+} from '~~/db/schema'
 
 /**
  * 采集器入口（B主：GitHub Actions / A备：本地脚本）。
@@ -79,6 +88,23 @@ export default defineEventHandler(async (event) => {
       updatedAt: now,
     }
 
+    // 回填股票主数据字典（改名/换板自动跟随，历史名仍以 limit_records 快照为准）
+    if (values.stockName) {
+      await db
+        .insert(stocks)
+        .values({
+          code: stockCode,
+          name: values.stockName,
+          board: values.board,
+          isSt: /ST/i.test(values.stockName),
+          updatedAt: now,
+        })
+        .onConflictDoUpdate({
+          target: stocks.code,
+          set: { name: values.stockName, board: values.board, isSt: /ST/i.test(values.stockName), updatedAt: now },
+        })
+    }
+
     let recordId: number
     if (existing) {
       await db.update(limitRecords).set(values).where(eq(limitRecords.id, existing.id))
@@ -97,18 +123,29 @@ export default defineEventHandler(async (event) => {
     await db.delete(limitReasonTags).where(eq(limitReasonTags.limitRecordId, recordId))
     for (const tag of Array.isArray(r.tags) ? r.tags : []) {
       const type = String(tag.type || 'concept')
+      const tagId = String(tag.id || '')
+      if (!tagId) continue
+
+      // 顺手补齐字典表，前端展示名称时不用再回源
+      if (type === 'sector') {
+        await db.insert(sectors).values({ id: tagId, name: tagId, kind: 'industry' }).onConflictDoNothing()
+      } else {
+        await db.insert(concepts).values({ id: tagId, name: tagId }).onConflictDoNothing()
+      }
+
       await db.insert(limitReasonTags).values({
         limitRecordId: recordId,
-        conceptId: type === 'concept' ? String(tag.id || '') : null,
-        sectorId: type === 'sector' ? String(tag.id || '') : null,
+        conceptId: type === 'concept' ? tagId : null,
+        sectorId: type === 'sector' ? tagId : null,
         tagType: type,
         weight: tag.weight ?? 1,
       })
     }
   }
 
-  // 重新汇总当日情绪（写入派生表，首页直接读）
+  // 重新汇总当日情绪 + 板块榜（写入派生表，首页直接读，避免主表实时 GROUP BY）
   await recomputeSummary(db, tradeDate)
+  await recomputeSectorStats(db, tradeDate)
 
   const durationMs = Date.now() - start
   await db.insert(ingestRuns).values({
@@ -124,6 +161,47 @@ export default defineEventHandler(async (event) => {
 
   return { ok: true, trade_date: tradeDate, stats: { fetched: records.length, inserted, updated, skipped, durationMs } }
 })
+
+/**
+ * 重算某交易日板块榜。
+ * 口径：limit_reason_tags 里 tag_type='sector' 的行业标签，按涨停家数聚合排名。
+ * 采集器（akshare 涨停池「所属行业」）会带上这个标签；没有行业数据时该表为空，页面自动降级到题材榜。
+ */
+async function recomputeSectorStats(db: ReturnType<typeof useDrizzle>, tradeDate: string) {
+  const rows = await db
+    .select({
+      sectorId: limitReasonTags.sectorId,
+      cnt: sql<number>`count(*)`,
+      avgPct: sql<number>`avg(${limitRecords.pct})`,
+    })
+    .from(limitReasonTags)
+    .innerJoin(limitRecords, eq(limitReasonTags.limitRecordId, limitRecords.id))
+    .where(
+      and(
+        eq(limitRecords.tradeDate, tradeDate),
+        eq(limitRecords.limitType, 'up'),
+        eq(limitReasonTags.tagType, 'sector'),
+      ),
+    )
+    .groupBy(limitReasonTags.sectorId)
+    .orderBy(sql`count(*) desc, ${limitReasonTags.sectorId} asc`)
+
+  // 全量重写当日快照，保证与主表一致（当日数据量在百级，成本可忽略）
+  await db.delete(sectorDailyStats).where(eq(sectorDailyStats.tradeDate, tradeDate))
+
+  let rank = 0
+  for (const row of rows) {
+    if (!row.sectorId) continue
+    rank++
+    await db.insert(sectorDailyStats).values({
+      tradeDate,
+      sectorId: row.sectorId,
+      limitUpCount: Number(row.cnt),
+      avgPct: row.avgPct == null ? null : Number(row.avgPct),
+      rank,
+    })
+  }
+}
 
 /** 重算某交易日情绪汇总 */
 async function recomputeSummary(db: ReturnType<typeof useDrizzle>, tradeDate: string) {
