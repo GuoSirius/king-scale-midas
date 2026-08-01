@@ -11,7 +11,14 @@ export const useSession = () => {
   async function load() {
     if (loaded.value) return
     try {
-      const res = await $fetch<{ user: SessionUser | null }>('/api/auth/me')
+      // SSR 阶段：内部 $fetch 不会自动带上入站 cookie，需手动透传，
+      // 否则服务端渲染受保护页面时 /api/auth/me 读不到会话 → 被中间件弹回 /login。
+      const headers: Record<string, string> = {}
+      if (import.meta.server) {
+        const cookie = useRequestHeaders(['cookie']).cookie
+        if (cookie) headers.cookie = cookie
+      }
+      const res = await $fetch<{ user: SessionUser | null }>('/api/auth/me', { headers })
       user.value = res.user
     } catch {
       user.value = null
