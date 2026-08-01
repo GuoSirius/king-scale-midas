@@ -1,3 +1,4 @@
+import { resolve } from 'node:path'
 import { defineNuxtConfig } from 'nuxt/config'
 
 // 金鳞·点石 — A股每日涨跌停复盘系统
@@ -104,7 +105,8 @@ export default defineNuxtConfig({
     ? {
       preset: 'node-server',
       // 只在本地模式注册，Cloudflare 构建完全不会打包 node:sqlite
-      plugins: ['~~/local/nitro-local-d1.ts']
+      // 用 process.cwd() 拼绝对路径，避免 Nuxt/Nitro 别名(~~)在插件加载器里解析异常
+      plugins: [resolve(process.cwd(), 'server/local/nitro-local-d1.ts')]
     }
     : {
       preset: 'cloudflare_module',

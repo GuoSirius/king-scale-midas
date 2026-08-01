@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "nuxt dev",
-    "dev:local": "node scripts/local-db.mjs && nuxt dev",
+    "dev:local": "node scripts/local-db.mjs && nuxt dev --host",
     "build": "eslint . && nuxt build",
     "build:local": "node scripts/local-db.mjs && eslint . && nuxt build",
     "preview:local": "node .output/server/index.mjs",
