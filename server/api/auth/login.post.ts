@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm'
 import { useDrizzle } from '~~/server/utils/db'
 import { verifyPassword } from '~~/server/utils/crypto'
 import { createSession } from '~~/server/utils/session'
-import { users, type User } from '~~/db/schema'
+import { users, type User } from '~~/server/db/schema'
 
 function publicUser(u: User) {
   return { id: u.id, email: u.email, username: u.username, status: u.status, role: u.role }

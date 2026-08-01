@@ -1,6 +1,6 @@
 import { defineEventHandler } from 'h3'
 import { getUserFromEvent } from '~~/server/utils/session'
-import type { User } from '~~/db/schema'
+import type { User } from '~~/server/db/schema'
 
 export default defineEventHandler(async (event) => {
   const user = await getUserFromEvent(event)
@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     email: user.email,
     username: user.username,
     status: user.status,
-    role: user.role,
+    role: user.role
   }
   return { user: safe }
 })

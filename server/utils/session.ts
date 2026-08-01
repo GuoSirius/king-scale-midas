@@ -2,7 +2,7 @@ import { getCookie, setCookie, deleteCookie, getRequestHeader, type H3Event } fr
 import { and, eq, gt } from 'drizzle-orm'
 import { useDrizzle } from './db'
 import { sha256Hex, randomToken } from './crypto'
-import { sessions, users, type User } from '~~/db/schema'
+import { sessions, users, type User } from '~~/server/db/schema'
 
 const COOKIE = 'ksm_session'
 const TTL_DAYS = 7
@@ -19,14 +19,14 @@ export async function createSession(event: H3Event, userId: number) {
     tokenHash,
     expiresAt,
     ip: getRequestHeader(event, 'x-forwarded-for') || null,
-    userAgent: getRequestHeader(event, 'user-agent') || null,
+    userAgent: getRequestHeader(event, 'user-agent') || null
   })
   setCookie(event, COOKIE, token, {
     httpOnly: true,
     secure: true,
     sameSite: 'lax',
     path: '/',
-    maxAge: MAX_AGE,
+    maxAge: MAX_AGE
   })
 }
 
