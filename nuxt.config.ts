@@ -21,6 +21,7 @@ export default defineNuxtConfig({
     ...(LOCAL_MODE ? [] : ['nitro-cloudflare-dev']), // Cloudflare 本地 D1/KV 仿真 + Workers 构建
     '@unocss/nuxt',         // UnoCSS 原子化 CSS
     '@vite-pwa/nuxt',       // PWA：离线缓存 + 可安装
+    '@nuxt/eslint'          // 开发期 ESLint 校验 + 生成为自动导入 globals
   ],
 
   // ── 渲染模式：当前 SSR；CSR / SSG / ISR 已预留 ──────
@@ -41,7 +42,7 @@ export default defineNuxtConfig({
   // ── 服务端环境变量（通过 NUXT_INGEST_SECRET / NUXT_SESSION_SECRET 注入） ──
   runtimeConfig: {
     ingestSecret: '',   // /api/ingest 的 HMAC 签名密钥
-    sessionSecret: '',  // 会话 cookie 签名密钥
+    sessionSecret: ''  // 会话 cookie 签名密钥
   },
 
   // ── PWA ───────────────────────────────────────────
@@ -60,14 +61,14 @@ export default defineNuxtConfig({
       icons: [
         { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
         { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-        { src: '/maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
-      ],
+        { src: '/maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
+      ]
     },
     workbox: {
       globPatterns: ['**/*.{js,css,html,ico,png,woff2}'],
-      navigateFallback: '/',
+      navigateFallback: '/'
     },
-    devOptions: { enabled: false },
+    devOptions: { enabled: false }
   },
 
   app: {
@@ -78,13 +79,13 @@ export default defineNuxtConfig({
         {
           innerHTML:
             "(function(){try{var t=localStorage.getItem('theme')||'dark';var m=window.matchMedia('(prefers-color-scheme: dark)').matches;var d=t==='dark'||(t==='system'&&m);document.documentElement.classList.toggle('light',!d);}catch(e){}})();",
-          tagPosition: 'head',
-        },
+          tagPosition: 'head'
+        }
       ],
       link: [
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico', sizes: '16x16 32x32 48x48 128x128' },
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg', sizes: 'any' },
-        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png', sizes: '180x180' },
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png', sizes: '180x180' }
       ],
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
@@ -93,22 +94,22 @@ export default defineNuxtConfig({
         { property: 'og:title', content: '金鳞·点石' },
         { property: 'og:description', content: 'A股每日涨跌停复盘与题材追踪' },
         { property: 'og:image', content: '/og-image.png' },
-        { property: 'og:type', content: 'website' },
-      ],
-    },
+        { property: 'og:type', content: 'website' }
+      ]
+    }
   },
 
   // 构建产物：Cloudflare Workers（免费），D1 绑定由 wrangler.toml 提供
   nitro: LOCAL_MODE
     ? {
-        preset: 'node-server',
-        // 只在本地模式注册，Cloudflare 构建完全不会打包 node:sqlite
-        plugins: ['~~/local/nitro-local-d1.ts'],
-      }
+      preset: 'node-server',
+      // 只在本地模式注册，Cloudflare 构建完全不会打包 node:sqlite
+      plugins: ['~~/local/nitro-local-d1.ts']
+    }
     : {
-        preset: 'cloudflare_module',
-        cloudflare: {
-          deployConfig: false,
-        },
-      },
+      preset: 'cloudflare_module',
+      cloudflare: {
+        deployConfig: false
+      }
+    }
 })

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * 初始化本地 SQLite（A 备方案）：把 drizzle/*.sql 迁移全部应用到 .data/local.db。
+ * 初始化本地 SQLite（A 备方案）：把 server/db/migrations/*.sql 全部应用到 .data/local.db。
  *
  * 幂等：已应用过的迁移会记录在 __local_migrations 表里，重复执行会跳过。
  * 用法：
@@ -14,7 +14,7 @@ import { resolve, join } from 'node:path'
 const root = process.cwd()
 const dataDir = resolve(root, '.data')
 const dbPath = process.env.LOCAL_D1_PATH || join(dataDir, 'local.db')
-const migDir = resolve(root, 'drizzle')
+const migDir = resolve(root, 'server/db/migrations')
 const reset = process.argv.includes('--reset')
 
 if (reset && existsSync(dbPath)) {

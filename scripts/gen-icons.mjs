@@ -46,7 +46,7 @@ const sparkle = (cx, cy, outer, inner) => [
   `Q ${cx + inner * 0.35} ${cy + inner * 0.35} ${cx} ${cy + outer}`,
   `Q ${cx - inner * 0.35} ${cy + inner * 0.35} ${cx - inner} ${cy}`,
   `Q ${cx - inner * 0.35} ${cy - inner * 0.35} ${cx} ${cy - outer}`,
-  'Z',
+  'Z'
 ].join(' ')
 
 /**
@@ -61,10 +61,10 @@ export function markFull({ bleed = false, scale = 1 } = {}) {
     { y: 184, xs: [256] },
     { y: 252, xs: [216, 296] },
     { y: 320, xs: [176, 256, 336] },
-    { y: 388, xs: [136, 216, 296, 376] },
+    { y: 388, xs: [136, 216, 296, 376] }
   ]
   const scales = rows
-    .flatMap(({ y, xs }) => xs.map(cx => `<path d="${arc(cx, y, R)}"/>`))
+    .flatMap(({ y, xs }) => xs.map((cx) => `<path d="${arc(cx, y, R)}"/>`))
     .join('\n      ')
 
   const base = bleed
@@ -201,7 +201,7 @@ function buildIco(entries) {
     offset += e.data.length
   }
 
-  return Buffer.concat([dir, ...table, ...entries.map(e => e.data)])
+  return Buffer.concat([dir, ...table, ...entries.map((e) => e.data)])
 }
 
 /* ------------------------------------------------------------------ */
@@ -231,13 +231,13 @@ async function main() {
   await put('icon-512.png', await render(full, 512).png({ compressionLevel: 9 }).toBuffer())
   await put(
     'maskable-512.png',
-    await render(maskable, 512).png({ compressionLevel: 9 }).toBuffer(),
+    await render(maskable, 512).png({ compressionLevel: 9 }).toBuffer()
   )
 
   // 3) iOS 主屏图标：必须不透明、不带圆角（系统会自己切）
   await put(
     'apple-touch-icon.png',
-    await render(fullBleed, 180).flatten({ background: INK_BOTTOM }).png({ compressionLevel: 9 }).toBuffer(),
+    await render(fullBleed, 180).flatten({ background: INK_BOTTOM }).png({ compressionLevel: 9 }).toBuffer()
   )
 
   // 4) favicon.ico：16/32/48 用实心变体 + BMP，64/128/256 用完整徽标 + PNG

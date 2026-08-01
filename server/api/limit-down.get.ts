@@ -2,7 +2,7 @@ import { defineEventHandler, getQuery } from 'h3'
 import { and, desc, eq, like, or, sql } from 'drizzle-orm'
 import type { SQL } from 'drizzle-orm'
 import { useDrizzle } from '~~/server/utils/db'
-import { limitRecords } from '~~/db/schema'
+import { limitRecords } from '~~/server/db/schema'
 
 /** 跌停列表 */
 export default defineEventHandler(async (event) => {

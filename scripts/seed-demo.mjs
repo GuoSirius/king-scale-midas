@@ -42,7 +42,7 @@ const UP = [
   ['601899', '紫金矿业', 'main', 1, '黄金上涨',  ['黄金', '有色金属'], '13:55:30', 1, '贵金属'],
   ['000858', '五粮液',   'main', 1, '消费复苏',  ['白酒', '消费'], '14:31:00', 2, '酿酒行业'],
   ['688256', '寒武纪',   'star', 4, '国产算力',  ['算力', '人工智能', '国产替代'], '09:30:01', 0, '半导体'],
-  ['920002', '万达轴承', 'bse', 2, '北交所活跃', ['北交所'], '10:10:10', 0, '通用设备'],
+  ['920002', '万达轴承', 'bse', 2, '北交所活跃', ['北交所'], '10:10:10', 0, '通用设备']
 ]
 
 const DOWN = [
@@ -50,7 +50,7 @@ const DOWN = [
   ['300888', '稳健医疗', 'cyb', '订单下滑', ['医疗器械'], '医疗器械'],
   ['603929', '亚翔集成', 'main', '高位杀跌', ['半导体'], '专业工程'],
   ['688169', '石头科技', 'star', '减持公告', ['小家电'], '家用轻工'],
-  ['000980', '众泰汽车', 'main', 'ST风险', ['汽车整车'], '汽车整车'],
+  ['000980', '众泰汽车', 'main', 'ST风险', ['汽车整车'], '汽车整车']
 ]
 
 const rnd = (min, max, dec = 2) => Number((min + Math.random() * (max - min)).toFixed(dec))
@@ -74,8 +74,8 @@ const records = [
     reason_raw: reason,
     tags: [
       { type: 'sector', id: industry, weight: 1 },
-      ...tags.map((n, i) => ({ type: 'concept', id: n, weight: i === 0 ? 1 : 0.6 })),
-    ],
+      ...tags.map((n, i) => ({ type: 'concept', id: n, weight: i === 0 ? 1 : 0.6 }))
+    ]
   })),
   ...DOWN.map(([code, name, board, reason, tags, industry]) => ({
     stock_code: code,
@@ -95,9 +95,9 @@ const records = [
     reason_raw: reason,
     tags: [
       { type: 'sector', id: industry, weight: 1 },
-      ...tags.map((n) => ({ type: 'concept', id: n, weight: 1 })),
-    ],
-  })),
+      ...tags.map((n) => ({ type: 'concept', id: n, weight: 1 }))
+    ]
+  }))
 ]
 
 const payload = { trade_date: TRADE_DATE, source: 'seed-demo', records }
@@ -107,7 +107,7 @@ const sig = createHmac('sha256', SECRET).update(body, 'utf8').digest('hex')
 const res = await fetch(URL_, {
   method: 'POST',
   headers: { 'content-type': 'application/json', 'x-signature': sig },
-  body,
+  body
 })
 
 const text = await res.text()

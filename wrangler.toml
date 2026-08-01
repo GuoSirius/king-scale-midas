@@ -2,9 +2,13 @@ name = "king-scale-midas"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
+# Nuxt 构建产物（nitro preset: cloudflare_module）
+main = ".output/server/index.mjs"
+assets = { directory = ".output/public", binding = "ASSETS" }
+
 # 本地开发时 D1 数据存于 .wrangler/state；远程需先创建数据库并填入 database_id
 [[d1_databases]]
 binding = "DB"
 database_name = "king-scale-midas-db"
 database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
-migrations_dir = "./drizzle"
+migrations_dir = "./server/db/migrations"

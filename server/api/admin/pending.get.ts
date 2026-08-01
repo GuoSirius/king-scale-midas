@@ -2,12 +2,12 @@ import { defineEventHandler } from 'h3'
 import { eq, desc } from 'drizzle-orm'
 import { useDrizzle } from '~~/server/utils/db'
 import { requireAdmin } from '~~/server/utils/auth'
-import { users, type User } from '~~/db/schema'
+import { users, type User } from '~~/server/db/schema'
 
 function publicUser(u: User) {
   return {
     id: u.id, email: u.email, username: u.username, status: u.status, role: u.role,
-    createdAt: u.createdAt, lastLoginAt: u.lastLoginAt,
+    createdAt: u.createdAt, lastLoginAt: u.lastLoginAt
   }
 }
 

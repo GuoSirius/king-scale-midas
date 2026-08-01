@@ -2,7 +2,7 @@ import { defineEventHandler, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { useDrizzle } from '~~/server/utils/db'
 import { requireAdmin } from '~~/server/utils/auth'
-import { users, auditLogs } from '~~/db/schema'
+import { users, auditLogs } from '~~/server/db/schema'
 
 /** 审核通过用户 */
 export default defineEventHandler(async (event) => {

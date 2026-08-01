@@ -1,7 +1,7 @@
 import { defineEventHandler } from 'h3'
 import { and, asc, desc, eq, sql } from 'drizzle-orm'
 import { useDrizzle } from '~~/server/utils/db'
-import { marketDailySummary, sectorDailyStats, limitRecords, limitReasonTags, concepts } from '~~/db/schema'
+import { marketDailySummary, sectorDailyStats, limitRecords, limitReasonTags, concepts } from '~~/server/db/schema'
 
 /** 首页情绪面板数据：最新交易日汇总 + 热门板块 + 热门题材 */
 export default defineEventHandler(async (event) => {
@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
   const topConcepts = await db
     .select({
       conceptId: limitReasonTags.conceptId,
-      count: sql<number>`count(*)`,
+      count: sql<number>`count(*)`
     })
     .from(limitReasonTags)
     .innerJoin(limitRecords, eq(limitReasonTags.limitRecordId, limitRecords.id))

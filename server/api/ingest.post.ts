@@ -10,8 +10,8 @@ import {
   ingestRuns,
   stocks,
   sectors,
-  concepts,
-} from '~~/db/schema'
+  concepts
+} from '~~/server/db/schema'
 
 /**
  * 采集器入口（B主：GitHub Actions / A备：本地脚本）。
@@ -56,7 +56,7 @@ export default defineEventHandler(async (event) => {
     const where = and(
       eq(limitRecords.tradeDate, tradeDate),
       eq(limitRecords.stockCode, stockCode),
-      eq(limitRecords.limitType, limitType),
+      eq(limitRecords.limitType, limitType)
     )
     const [existing] = await db.select().from(limitRecords).where(where).limit(1)
 
@@ -85,7 +85,7 @@ export default defineEventHandler(async (event) => {
       ztCount: r.zt_count ?? 1,
       reasonRaw: r.reason_raw ?? null,
       source,
-      updatedAt: now,
+      updatedAt: now
     }
 
     // 回填股票主数据字典（改名/换板自动跟随，历史名仍以 limit_records 快照为准）
@@ -97,11 +97,11 @@ export default defineEventHandler(async (event) => {
           name: values.stockName,
           board: values.board,
           isSt: /ST/i.test(values.stockName),
-          updatedAt: now,
+          updatedAt: now
         })
         .onConflictDoUpdate({
           target: stocks.code,
-          set: { name: values.stockName, board: values.board, isSt: /ST/i.test(values.stockName), updatedAt: now },
+          set: { name: values.stockName, board: values.board, isSt: /ST/i.test(values.stockName), updatedAt: now }
         })
     }
 
@@ -139,7 +139,7 @@ export default defineEventHandler(async (event) => {
         conceptId: type === 'concept' ? tagId : null,
         sectorId: type === 'sector' ? tagId : null,
         tagType: type,
-        weight: tag.weight ?? 1,
+        weight: tag.weight ?? 1
       })
     }
   }
@@ -157,7 +157,7 @@ export default defineEventHandler(async (event) => {
     inserted,
     updated,
     skipped,
-    durationMs,
+    durationMs
   })
 
   return { ok: true, trade_date: tradeDate, stats: { fetched: records.length, inserted, updated, skipped, durationMs } }
@@ -173,7 +173,7 @@ async function recomputeSectorStats(db: ReturnType<typeof useDrizzle>, tradeDate
     .select({
       sectorId: limitReasonTags.sectorId,
       cnt: sql<number>`count(*)`,
-      avgPct: sql<number>`avg(${limitRecords.pct})`,
+      avgPct: sql<number>`avg(${limitRecords.pct})`
     })
     .from(limitReasonTags)
     .innerJoin(limitRecords, eq(limitReasonTags.limitRecordId, limitRecords.id))
@@ -181,8 +181,8 @@ async function recomputeSectorStats(db: ReturnType<typeof useDrizzle>, tradeDate
       and(
         eq(limitRecords.tradeDate, tradeDate),
         eq(limitRecords.limitType, 'up'),
-        eq(limitReasonTags.tagType, 'sector'),
-      ),
+        eq(limitReasonTags.tagType, 'sector')
+      )
     )
     .groupBy(limitReasonTags.sectorId)
     .orderBy(sql`count(*) desc, ${limitReasonTags.sectorId} asc`)
@@ -199,7 +199,7 @@ async function recomputeSectorStats(db: ReturnType<typeof useDrizzle>, tradeDate
       sectorId: row.sectorId,
       limitUpCount: Number(row.cnt),
       avgPct: row.avgPct == null ? null : Number(row.avgPct),
-      rank,
+      rank
     })
   }
 }
@@ -212,7 +212,7 @@ async function recomputeSummary(db: ReturnType<typeof useDrizzle>, tradeDate: st
       down: sql<number>`coalesce(sum(case when limit_type='down' then 1 else 0 end),0)`,
       openCnt: sql<number>`coalesce(sum(case when limit_type='up' and open_times>0 then 1 else 0 end),0)`,
       height: sql<number>`coalesce(max(case when limit_type='up' then zt_count else 0 end),0)`,
-      first: sql<number>`coalesce(sum(case when limit_type='up' and zt_count=1 then 1 else 0 end),0)`,
+      first: sql<number>`coalesce(sum(case when limit_type='up' and zt_count=1 then 1 else 0 end),0)`
     })
     .from(limitRecords)
     .where(eq(limitRecords.tradeDate, tradeDate)))[0]
@@ -231,7 +231,7 @@ async function recomputeSummary(db: ReturnType<typeof useDrizzle>, tradeDate: st
       limitUpOpenCount: openCnt,
       ztHeight: Number(agg.height),
       firstBoardCount: Number(agg.first),
-      sealRate,
+      sealRate
     })
     .onConflictDoUpdate({
       target: marketDailySummary.tradeDate,
@@ -241,7 +241,7 @@ async function recomputeSummary(db: ReturnType<typeof useDrizzle>, tradeDate: st
         limitUpOpenCount: openCnt,
         ztHeight: Number(agg.height),
         firstBoardCount: Number(agg.first),
-        sealRate,
-      },
+        sealRate
+      }
     })
 }

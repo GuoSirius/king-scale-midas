@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/d1'
-import { schema } from '~~/db/schema'
+import { schema } from '~~/server/db/schema'
 import { createError, type H3Event } from 'h3'
 
 /**
@@ -14,7 +14,7 @@ export function useDrizzle(event: H3Event) {
     throw createError({
       statusCode: 500,
       statusMessage:
-        'D1 binding "DB" not found. Run via `npm run dev` (miniflare) or deploy to Cloudflare Workers.',
+        'D1 binding "DB" not found. Run via `npm run dev` (miniflare) or deploy to Cloudflare Workers.'
     })
   }
   return drizzle(binding, { schema })

@@ -2,7 +2,7 @@ import { defineEventHandler } from 'h3'
 import { desc } from 'drizzle-orm'
 import { useDrizzle } from '~~/server/utils/db'
 import { requireAdmin } from '~~/server/utils/auth'
-import { ingestRuns } from '~~/db/schema'
+import { ingestRuns } from '~~/server/db/schema'
 
 /** 采集运行监控（最近 20 次） */
 export default defineEventHandler(async (event) => {

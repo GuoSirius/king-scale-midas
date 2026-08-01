@@ -1,7 +1,7 @@
 import { defineEventHandler, createError } from 'h3'
 import { desc, eq } from 'drizzle-orm'
 import { useDrizzle } from '~~/server/utils/db'
-import { limitRecords, limitReasonTags, concepts, stocks } from '~~/db/schema'
+import { limitRecords, limitReasonTags, concepts, stocks } from '~~/server/db/schema'
 
 /** 单只股票的历史涨跌停记录 + 题材标签 */
 export default defineEventHandler(async (event) => {
@@ -30,9 +30,9 @@ export default defineEventHandler(async (event) => {
         ...r,
         tags: tags
           .filter((t) => t.tagType === 'concept' && t.conceptId)
-          .map((t) => ({ id: t.conceptId, name: cMap.get(t.conceptId!) || t.conceptId })),
+          .map((t) => ({ id: t.conceptId, name: cMap.get(t.conceptId!) || t.conceptId }))
       }
-    }),
+    })
   )
 
   return { stock: stock || null, history }

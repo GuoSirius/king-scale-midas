@@ -2,7 +2,7 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { useDrizzle } from '~~/server/utils/db'
 import { requireUser } from '~~/server/utils/auth'
-import { limitRecords, userNotes } from '~~/db/schema'
+import { limitRecords, userNotes } from '~~/server/db/schema'
 
 /**
  * 补全 / 修订涨跌停原因。
@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
       .set({
         reasonFinal: String(body.reason_final || ''),
         isVerified: true,
-        updatedAt: now,
+        updatedAt: now
       })
       .where(eq(limitRecords.id, id))
     scope = 'global'
@@ -56,15 +56,15 @@ export default defineEventHandler(async (event) => {
         userId: user.id,
         note: body.note ?? null,
         reasonOverride: override ?? null,
-        updatedAt: now,
+        updatedAt: now
       })
       .onConflictDoUpdate({
         target: [userNotes.limitRecordId, userNotes.userId],
         set: {
           ...(body.note !== undefined ? { note: body.note ?? null } : {}),
           ...(override !== undefined ? { reasonOverride: override ?? null } : {}),
-          updatedAt: now,
-        },
+          updatedAt: now
+        }
       })
     if (scope === 'none') scope = 'personal'
   }

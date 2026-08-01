@@ -5,8 +5,8 @@ import { defineConfig } from 'drizzle-kit'
 //   npm run db:migrate:remote  (Cloudflare 远程 D1)
 export default defineConfig({
   dialect: 'sqlite',
-  schema: './db/schema.ts',
-  out: './drizzle',
+  schema: './server/db/schema.ts',
+  out: './server/db/migrations',
   strict: true,
-  verbose: true,
+  verbose: true
 })

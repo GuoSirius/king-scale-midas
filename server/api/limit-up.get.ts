@@ -2,7 +2,7 @@ import { defineEventHandler, getQuery } from 'h3'
 import { and, desc, eq, gte, like, or, sql } from 'drizzle-orm'
 import type { SQL } from 'drizzle-orm'
 import { useDrizzle } from '~~/server/utils/db'
-import { limitRecords } from '~~/db/schema'
+import { limitRecords } from '~~/server/db/schema'
 
 /** 涨停列表（支持 日期/板块/连板数/关键词 过滤 + 分页） */
 export default defineEventHandler(async (event) => {
