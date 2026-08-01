@@ -295,6 +295,8 @@ export const userNotes = sqliteTable('user_notes', {
   updatedAt: text('updated_at').notNull().default(sql`(current_timestamp)`),
 }, (t) => ({
   recIdx: index('un_rec_idx').on(t.limitRecordId),
+  // 一个用户对一条记录只保留一份补全，重复保存走 upsert
+  unq: uniqueIndex('un_rec_user_uniq').on(t.limitRecordId, t.userId),
 }))
 
 /** 自选 / 关注池 */

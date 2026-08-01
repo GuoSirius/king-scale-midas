@@ -23,7 +23,7 @@ const reasonMsg = ref('')
 async function saveReason() {
   reasonMsg.value = ''
   try {
-    await $fetch(`/api/admin/records/${recId.value}`, { method: 'PATCH', body: { reason_final: reasonText.value } })
+    await $fetch(`/api/records/${recId.value}`, { method: 'PATCH', body: { reason_final: reasonText.value } })
     reasonMsg.value = '已保存并标记为已校订'
     recId.value = ''
     reasonText.value = ''

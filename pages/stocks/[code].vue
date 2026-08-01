@@ -10,7 +10,7 @@ const msg = ref('')
 async function saveReason(id: number) {
   msg.value = ''
   try {
-    await $fetch(`/api/admin/records/${id}`, { method: 'PATCH', body: { reason_override: draft.value } })
+    await $fetch(`/api/records/${id}`, { method: 'PATCH', body: { reason_override: draft.value } })
     msg.value = '已提交补全，感谢贡献！'
     editingId.value = null
     draft.value = ''

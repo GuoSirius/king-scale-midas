@@ -6,8 +6,12 @@ import { limitRecords, userNotes } from '~~/db/schema'
 
 /**
  * 补全 / 修订涨跌停原因。
- * - 管理员：可直接写 reason_final 并置 is_verified=1（受保护，采集器不再覆盖）。
- * - 普通用户：写入 user_notes.reason_override（查看时展示，不覆盖原始数据）。
+ *
+ * 权限分层（对应「原因抓不到时用户可自行补全」）：
+ * - 管理员：写 limit_records.reason_final 并置 is_verified=1 → 全站可见，且采集器永不覆盖。
+ * - 普通用户：写 user_notes.reason_override → 仅自己可见，不污染原始数据。
+ *
+ * 容错：普通用户误传 reason_final 时自动降级为个人补全，而不是静默失败。
  */
 export default defineEventHandler(async (event) => {
   const user = await requireUser(event)
@@ -20,24 +24,52 @@ export default defineEventHandler(async (event) => {
   if (!rec) throw createError({ statusCode: 404, statusMessage: '记录不存在' })
 
   const now = new Date().toISOString()
+  const isAdmin = user.role === 'admin'
+  let scope: 'global' | 'personal' | 'none' = 'none'
 
-  if (user.role === 'admin' && body.reason_final !== undefined) {
-    await db.update(limitRecords).set({
-      reasonFinal: String(body.reason_final || ''),
-      isVerified: true,
-      updatedAt: now,
-    }).where(eq(limitRecords.id, id))
+  // 管理员校订：写入权威字段并上锁
+  if (isAdmin && body.reason_final !== undefined) {
+    await db
+      .update(limitRecords)
+      .set({
+        reasonFinal: String(body.reason_final || ''),
+        isVerified: true,
+        updatedAt: now,
+      })
+      .where(eq(limitRecords.id, id))
+    scope = 'global'
   }
 
-  if (body.note !== undefined || body.reason_override !== undefined) {
-    await db.insert(userNotes).values({
-      limitRecordId: id,
-      userId: user.id,
-      note: body.note ?? null,
-      reasonOverride: body.reason_override ?? null,
-      updatedAt: now,
-    })
+  // 个人补全：普通用户的 reason_final 也在这里兜住
+  const override =
+    body.reason_override !== undefined
+      ? body.reason_override
+      : !isAdmin && body.reason_final !== undefined
+        ? body.reason_final
+        : undefined
+
+  if (body.note !== undefined || override !== undefined) {
+    await db
+      .insert(userNotes)
+      .values({
+        limitRecordId: id,
+        userId: user.id,
+        note: body.note ?? null,
+        reasonOverride: override ?? null,
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: [userNotes.limitRecordId, userNotes.userId],
+        set: {
+          ...(body.note !== undefined ? { note: body.note ?? null } : {}),
+          ...(override !== undefined ? { reasonOverride: override ?? null } : {}),
+          updatedAt: now,
+        },
+      })
+    if (scope === 'none') scope = 'personal'
   }
 
-  return { ok: true }
+  if (scope === 'none') throw createError({ statusCode: 400, statusMessage: '没有可更新的字段' })
+
+  return { ok: true, scope }
 })

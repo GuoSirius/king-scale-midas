@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `un_rec_user_uniq` ON `user_notes` (`limit_record_id`,`user_id`);
