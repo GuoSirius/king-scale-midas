@@ -96,6 +96,13 @@ export const limitRecords = sqliteTable('limit_records', {
   circMarketCap: real('circ_market_cap'),      // 流通市值（元）
   totalMarketCap: real('total_market_cap'),
   ztCount: integer('zt_count').default(1),     // 连板数（1=首板）
+  sector: text('sector'),                      // 所属板块（快照，如 新能源车）
+  industry: text('industry'),                  // 所属行业（快照，如 半导体）
+  openTime: text('open_time'),                 // 开板时间 HH:MM:SS（炸板时刻，封死为 null）
+  patternDays: integer('pattern_days'),        // 「几天几版」天数维度（如 5天4版 → 5）
+  patternBoards: integer('pattern_boards'),    // 「几天几版」版数维度（如 5天4版 → 4）
+  nextOpenPrediction: text('next_open_prediction'), // 预测次日开盘预期（用户/模型标注）
+  nextOpenActual: real('next_open_actual'),    // 次日实际开盘涨跌幅 %（T+1 回填，校验预测）
   reasonRaw: text('reason_raw'),               // 机器抓取原因（尽力而为）
   reasonFinal: text('reason_final'),           // 人工最终原因（受 is_verified 保护）
   isVerified: integer('is_verified', { mode: 'boolean' }).notNull().default(false),
@@ -108,7 +115,9 @@ export const limitRecords = sqliteTable('limit_records', {
   codeIdx: index('lr_code_idx').on(t.stockCode),
   boardIdx: index('lr_board_idx').on(t.board),
   typeIdx: index('lr_type_idx').on(t.limitType),
-  ztIdx: index('lr_zt_idx').on(t.ztCount)
+  ztIdx: index('lr_zt_idx').on(t.ztCount),
+  sectorIdx: index('lr_sector_idx').on(t.sector),
+  industryIdx: index('lr_industry_idx').on(t.industry)
 }))
 
 /** 涨停原因题材标签（记录 ↔ 概念/板块 多对多） */
@@ -178,6 +187,61 @@ export const stockDailyQuote = sqliteTable('stock_daily_quote', {
   turnoverRate: real('turnover_rate')
 }, (t) => ({
   unq: uniqueIndex('sdq_uniq').on(t.tradeDate, t.stockCode)
+}))
+
+/** 龙虎榜席位（涨停/跌停股上榜后的买卖席位，用于席位维度分析） */
+export const dragonTiger = sqliteTable('dragon_tiger', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  tradeDate: text('trade_date').notNull(),
+  stockCode: text('stock_code').notNull(),
+  limitRecordId: integer('limit_record_id').references(() => limitRecords.id, { onDelete: 'cascade' }),
+  seatName: text('seat_name').notNull(),       // 席位名称（如 东方财富拉萨团结路）
+  seatType: text('seat_type').notNull().default('buy'), // buy / sell
+  rank: integer('rank'),                        // 1~5
+  buyAmount: real('buy_amount'),               // 买入金额（元）
+  sellAmount: real('sell_amount'),             // 卖出金额（元）
+  netAmount: real('net_amount'),               // 净买额（元）
+  createdAt: text('created_at').notNull().default(sql`(current_timestamp)`)
+}, (t) => ({
+  recIdx: index('dt_rec_idx').on(t.limitRecordId),
+  codeIdx: index('dt_code_idx').on(t.stockCode),
+  dateIdx: index('dt_date_idx').on(t.tradeDate)
+}))
+
+/** 关联的票（记录与其他票的关联：同题材 / 同板块 / 龙头跟风 / 用户标注） */
+export const limitRelated = sqliteTable('limit_related', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  tradeDate: text('trade_date').notNull(),
+  stockCode: text('stock_code').notNull(),
+  limitRecordId: integer('limit_record_id').references(() => limitRecords.id, { onDelete: 'cascade' }),
+  relatedCode: text('related_code').notNull(),  // 关联股票代码
+  relatedName: text('related_name'),
+  relationType: text('relation_type').notNull().default('concept'), // concept/same_board/leader/follower/user
+  weight: real('weight').default(1),
+  createdAt: text('created_at').notNull().default(sql`(current_timestamp)`)
+}, (t) => ({
+  recIdx: index('lr_rel_rec_idx').on(t.limitRecordId),
+  codeIdx: index('lr_rel_code_idx').on(t.stockCode),
+  relIdx: index('lr_rel_related_idx').on(t.relatedCode)
+}))
+
+/** 大盘指数每日行情（用于「与大盘对比」分析，如 上证 / 深成 / 创业板） */
+export const marketIndexDaily = sqliteTable('market_index_daily', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  tradeDate: text('trade_date').notNull(),
+  indexCode: text('index_code').notNull(),      // sh000001 / sz399001 / cyb399006
+  indexName: text('index_name'),
+  open: real('open'),
+  high: real('high'),
+  low: real('low'),
+  close: real('close'),
+  preClose: real('pre_close'),
+  pct: real('pct'),                             // 涨跌幅 %
+  volume: real('volume'),
+  amount: real('amount'),
+  createdAt: text('created_at').notNull().default(sql`(current_timestamp)`)
+}, (t) => ({
+  unq: uniqueIndex('mid_unq').on(t.tradeDate, t.indexCode)
 }))
 
 // ============ 域 C：用户与权限 ============
@@ -326,7 +390,8 @@ export const watchlistItems = sqliteTable('watchlist_items', {
 // 全部表汇总（供 db 初始化与类型推导）
 export const schema = {
   stocks, industries, sectors, concepts, boards, tradeCalendar,
-  limitRecords, limitReasonTags, marketDailySummary, sectorDailyStats, industryDailyStats, stockDailyQuote,
+  limitRecords, limitReasonTags, dragonTiger, limitRelated, marketIndexDaily,
+  marketDailySummary, sectorDailyStats, industryDailyStats, stockDailyQuote,
   users, roles, userRoles, sessions, permissions, rolePermissions, auditLogs,
   ingestRuns, dataSources, userNotes, watchlists, watchlistItems
 }
@@ -335,3 +400,6 @@ export const schema = {
 export type User = typeof users.$inferSelect
 export type LimitRecord = typeof limitRecords.$inferSelect
 export type SessionRow = typeof sessions.$inferSelect
+export type DragonTiger = typeof dragonTiger.$inferSelect
+export type LimitRelated = typeof limitRelated.$inferSelect
+export type MarketIndexDaily = typeof marketIndexDaily.$inferSelect
