@@ -44,8 +44,11 @@ docs/         项目文档：deploy（部署）/ guide（规范）/ planning（�
 # 1. 安装依赖（postinstall 会自动执行 nuxt prepare，生成类型与 ESLint 自动导入 globals）
 npm install
 
-# 2. 配置环境变量
-cp .env.example .env   # 填入 INGEST_SECRET / SESSION_SECRET
+# 2. 配置环境变量（.env 不会自动生成，必须手动复制后改值）
+cp .env.example .env
+#   至少改两项，且值相同：
+#     NUXT_INGEST_SECRET  ← Nuxt 服务端读取（必须 NUXT_ 前缀）
+#     INGEST_SECRET       ← Python 采集器读取（无前缀）
 
 # 3. 本地开发（无需 Cloudflare / workerd，D1 由 node:sqlite 模拟）
 npm run dev:local
@@ -66,116 +69,23 @@ npm run collect:local:today
 目标：零成本上线（Cloudflare 免费版 + GitHub Actions 免费 runner）。
 架构：Nuxt 4 SSR → Cloudflare Workers；D1 SQLite 存数据；GitHub Actions 盘后自动采集。
 
-### 1. 前置准备
+> **完整、可照做的部署步骤（含环境变量命名、密钥设置、部署后验证）统一维护在
+> [docs/deploy/cloudflare-github.md](./docs/deploy/cloudflare-github.md)。**
+> 本文档只给概览，避免与详细文档漂移。
 
-- Node.js ≥ 24（推荐 24 LTS / 26）
-- 一个 GitHub 账号
-- 一个 Cloudflare 账号（免费即可）
-- 安装 wrangler（可选）：`npm i -g wrangler` 或 `npx wrangler`
+快速部署清单（细节见上方文档）：
 
-### 2. 拉代码 & 安装依赖
+1. **前置**：Node.js ≥ 24、GitHub 账号、Cloudflare 账号（免费）。
+2. **本地先跑通（A 备）**：`npm install` → `cp .env.example .env`（设 `NUXT_INGEST_SECRET` 与 `INGEST_SECRET` 同值）→ `npm run dev:local` → 可选 `npm run db:seed:demo`。
+3. **建 D1**：`npx wrangler d1 create king-scale-midas-db`，把 `database_id` 填入 `wrangler.toml`。
+4. **迁移**：`npm run db:migrate:remote`。
+5. **设密钥（关键）**：Cloudflare 变量名必须是 **`NUXT_INGEST_SECRET` / `NUXT_SESSION_SECRET`**（带 `NUXT_` 前缀，不是 `INGEST_SECRET`）；或 `npx wrangler secret put NUXT_INGEST_SECRET`。
+6. **构建部署**：`npm run build` → `npx wrangler deploy`，得到 `*.workers.dev` 域名。
+7. **验证**：用错误签名 `curl` 打 `/api/ingest` 应返回 **401**（返回 500「未配置」= 密钥命名错）。
+8. **自动采集**：GitHub 仓库 Secrets 加 `INGEST_URL` / `INGEST_SECRET`（值与第 5 步相同），`collect.yml` 工作日约 15:30（北京时间）自动跑。
+9. **首个用户**：注册即管理员；后续用户需 `/admin` 审核。
 
-```bash
-git clone https://github.com/GuoSirius/king-scale-midas.git
-cd king-scale-midas
-npm install
-```
-
-### 3. 本地运行（A 备模式，无需 Cloudflare / workerd）
-
-```bash
-npm run dev:local
-```
-
-首次运行会生成 `.data/local.db` 和 `.env`（若不存在）。
-
-### 4. 创建 Cloudflare D1 数据库
-
-```bash
-npx wrangler d1 create king-scale-midas-db
-```
-
-记录返回的 `database_id`，填入 `wrangler.toml` 的 `[[d1_databases]]`：
-
-```toml
-[[d1_databases]]
-binding = "DB"
-database_name = "king-scale-midas-db"
-database_id = "<你的 database_id>"
-```
-
-> `wrangler.toml` 已配置 `main`、静态资源 `assets` 绑定与 `migrations_dir`，无需手动补。
-
-### 5. 应用数据库迁移
-
-```bash
-npm run db:migrate:remote   # 应用到远程 D1
-npm run db:migrate:local    # 或本地 wrangler dev 环境
-```
-
-### 6. 设置密钥并部署到 Cloudflare Workers
-
-在 Cloudflare Dashboard → Workers & Pages → king-scale-midas → Settings → Variables 中添加：
-
-| 变量名 | 说明 | 示例 |
-|--------|------|------|
-| `INGEST_SECRET` | 采集器 HMAC 签名密钥 | 随机 32+ 字符 |
-| `SESSION_SECRET` | 会话 cookie 签名密钥 | 随机 32+ 字符 |
-
-> Nuxt runtimeConfig 读取的是 `NUXT_INGEST_SECRET` / `NUXT_SESSION_SECRET`，
-> 在 Wrangler 变量里直接配 `INGEST_SECRET` / `SESSION_SECRET` 即可生效。
-
-构建并部署：
-
-```bash
-npm run build
-npx wrangler deploy .output/server/index.mjs --assets .output/public
-```
-
-部署成功后输出 Workers URL，例如 `https://king-scale-midas.<子域>.workers.dev`。
-
-### 7. 配置 GitHub Actions 自动采集（B 主，盘后触发）
-
-采集接口为 `POST https://<你的 Workers 域名>/api/ingest`。
-
-在仓库 **Settings → Secrets and variables → Actions → New repository secret** 添加：
-
-| Secret | 值 |
-|--------|-----|
-| `INGEST_URL` | `https://<你的 Workers 域名>/api/ingest` |
-| `INGEST_SECRET` | 与 Cloudflare 中一致的 HMAC 密钥 |
-
-仓库已有 `.github/workflows/collect.yml`，默认在 A 股收盘后（工作日 15:35 北京时间）自动运行。
-手动触发：`gh workflow run collect.yml`（或在 GitHub → Actions → Run workflow）。
-
-### 8. 本地采集作为备份（A 备）
-
-```bash
-export INGEST_URL=https://<你的 Workers 域名>/api/ingest
-export INGEST_SECRET=<你的密钥>
-python collector/run.py --date today
-```
-
-采集器用 HMAC-SHA256 签名后 POST 到 Workers。
-
-### 9. 首个用户注册与审核
-
-1. 打开站点注册，填写邮箱 / 用户名 / 密码。
-2. **第一个注册用户自动成为管理员**（库为空时自举）。
-3. 后续新用户注册后状态为 `pending`，需管理员在 `/admin` 审核通过才能登录。
-
-### 10. 更新（代码变更后重新部署）
-
-```bash
-git pull
-npm install
-npm run build
-npx wrangler deploy .output/server/index.mjs --assets .output/public
-```
-
-数据库结构若变更，先 `npm run db:generate` 生成迁移，再 `npm run db:migrate:remote` 应用，最后重新部署。
-
-更完整的部署说明见 [docs/deploy/cloudflare-github.md](./docs/deploy/cloudflare-github.md)。
+> 国内网络直接 `npm run dev` 可能因下载 workerd 二进制卡住，本地开发始终用 `npm run dev:local`。
 
 ## 核心设计
 
